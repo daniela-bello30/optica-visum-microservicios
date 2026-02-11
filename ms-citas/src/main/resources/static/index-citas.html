@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas Médicas - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .menu-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .menu-card-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .menu-card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .menu-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .features {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .features h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .feature-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .feature-item p {
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📅 Sistema de Citas Médicas</h1>
+    <p>Agenda tu examen visual de forma rápida y sencilla</p>
+</div>
+
+<div class="container">
+    <div class="menu-cards">
+        <a href="citas.html" class="menu-card">
+            <div class="menu-card-icon">📝</div>
+            <h2>Agendar Cita</h2>
+            <p>Reserva tu cita para examen visual, ajuste de monturas o medición de graduación</p>
+        </a>
+
+        <a href="mis-citas.html" class="menu-card">
+            <div class="menu-card-icon">📋</div>
+            <h2>Mis Citas</h2>
+            <p>Consulta, reprograma o cancela tus citas agendadas</p>
+        </a>
+
+        <a href="sucursales.html" class="menu-card">
+            <div class="menu-card-icon">📍</div>
+            <h2>Nuestras Sucursales</h2>
+            <p>Encuentra la sucursal más cercana a ti con horarios de atención</p>
+        </a>
+    </div>
+
+    <div class="features">
+        <h2>Servicios Disponibles</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">👁️</div>
+                <h3>Examen de Vista</h3>
+                <p>Evaluación completa de tu visión por profesionales certificados. Duración: 30 minutos</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">🔧</div>
+                <h3>Ajuste de Montura</h3>
+                <p>Ajuste y calibración perfecta de tus lentes. Servicio gratuito. Duración: 15 minutos</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">📏</div>
+                <h3>Graduación de Lentes</h3>
+                <p>Medición precisa para lentes de medida. Tecnología de punta. Duración: 45 minutos</p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">✨</div>
+                <h3>Limpieza Profesional</h3>
+                <p>Limpieza profunda de tus lentes con productos especializados. Duración: 10 minutos</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .payment-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .payment-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .payment-card.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .payment-card input[type="radio"] {
+            width: auto;
+            margin-bottom: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            border-top: 2px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .cart-items {
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>💳 Finalizar Compra - VISUM</h1>
+</div>
+
+<div class="container">
+    <!-- FORMULARIO -->
+    <div class="form-section">
+        <div id="message" class="message"></div>
+
+        <form id="checkoutForm">
+            <!-- TIPO DE ENTREGA -->
+            <h2>1. Tipo de Entrega</h2>
+            <div class="form-group">
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="envio" name="tipoEntrega" value="Envio" checked>
+                        <label for="envio">Envío a Domicilio (+S/ 15.00)</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="recojo" name="tipoEntrega" value="Recojo en Tienda">
+                        <label for="recojo">Recojo en Tienda (Gratis)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIRECCIÓN DE ENVÍO -->
+            <div id="direccionSection">
+                <h2>2. Dirección de Envío</h2>
+
+                <div class="form-group">
+                    <label for="nombreDestinatario">Nombre Completo del Destinatario:</label>
+                    <input type="text" id="nombreDestinatario" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="tel" id="telefono" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="departamento">Departamento:</label>
+                        <select id="departamento" required>
+                            <option value="">Seleccione</option>
+                            <option value="Lima">Lima</option>
+                            <option value="Arequipa">Arequipa</option>
+                            <option value="Cusco">Cusco</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="provincia">Provincia:</label>
+                        <input type="text" id="provincia" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="distrito">Distrito:</label>
+                        <input type="text" id="distrito" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="codigoPostal">Código Postal:</label>
+                        <input type="text" id="codigoPostal">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" id="direccion" placeholder="Calle, número, departamento" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="referencia">Referencia:</label>
+                    <textarea id="referencia" rows="2" placeholder="Ej: Casa blanca, portón negro"></textarea>
+                </div>
+            </div>
+
+            <!-- SUCURSAL DE RECOJO -->
+            <div id="sucursalSection" style="display: none;">
+                <h2>2. Sucursal de Recojo</h2>
+                <div class="form-group">
+                    <label for="sucursal">Seleccione Sucursal:</label>
+                    <select id="sucursal">
+                        <option value="">Cargando sucursales...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- MÉTODO DE PAGO -->
+            <h2>3. Método de Pago</h2>
+            <div class="payment-methods">
+                <div class="payment-card" onclick="selectPayment(1)">
+                    <input type="radio" name="metodoPago" value="1" id="pago1" required>
+                    <label for="pago1">
+                        <div style="font-size: 24px;">💳</div>
+                        <div style="font-weight: 600;">Tarjeta</div>
+                        <div style="font-size: 12px; color: #666;">Crédito/Débito</div>
+                    </label>
+                </div>
+
+                <div class="payment-card" onclick="selectPayment(2)">
+                    <input type="radio" name="metodoPago" value="2" id="pago2">
+                    <label for="pago2">
+                        <div style="font-size: 24px;">📱</div>
+                        <div style="font-weight: 600;">Yape</div>
+                        <div style="font-size: 12px; color: #666;">Pago móvil</div>
+                    </label>
+                </div>
+
+                <div class="payment-card" onclick="selectPayment(3)">
+                    <input type="radio" name="metodoPago" value="3" id="pago3">
+                    <label for="pago3">
+                        <div style="font-size: 24px;">📲</div>
+                        <div style="font-weight: 600;">Plin</div>
+                        <div style="font-size: 12px; color: #666;">Pago móvil</div>
+                    </label>
+                </div>
+
+                <div class="payment-card" onclick="selectPayment(5)">
+                    <input type="radio" name="metodoPago" value="5" id="pago5">
+                    <label for="pago5">
+                        <div style="font-size: 24px;">💵</div>
+                        <div style="font-weight: 600;">Contra Entrega</div>
+                        <div style="font-size: 12px; color: #666;">Pago en efectivo</div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- NOTAS ADICIONALES -->
+            <h2>4. Notas del Pedido (Opcional)</h2>
+            <div class="form-group">
+                <textarea id="notas" rows="3" placeholder="Instrucciones especiales para tu pedido..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Confirmar Pedido
+            </button>
+        </form>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="summary-section">
+        <h2>Resumen del Pedido</h2>
+
+        <div class="cart-items" id="cartItems">
+            <!-- Items del carrito -->
+        </div>
+
+        <div class="summary-item">
+            <span>Subtotal:</span>
+            <span id="subtotal">S/ 0.00</span>
+        </div>
+
+        <div class="summary-item">
+            <span>Envío:</span>
+            <span id="costoEnvio">S/ 15.00</span>
+        </div>
+
+        <div class="summary-item">
+            <span>Descuento:</span>
+            <span id="descuento">S/ 0.00</span>
+        </div>
+
+        <div class="summary-total">
+            <span>TOTAL:</span>
+            <span id="total">S/ 0.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_CARRITO = 'http://localhost:8083/carrito';
+    const API_VENTAS = 'http://localhost:8084/pedidos';
+    const API_CITAS = 'http://localhost:8085/sucursales';
+    const ID_USUARIO = parseInt(localStorage.getItem('idUsuario') || '1');
+
+    let carritoData = null;
+
+    window.onload = async () => {
+        await cargarCarrito();
+        await cargarSucursales();
+        configurarEventos();
+    };
+
+    async function cargarCarrito() {
+        try {
+            const response = await fetch(`${API_CARRITO}/${ID_USUARIO}`);
+            carritoData = await response.json();
+            mostrarResumen();
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('Error al cargar el carrito', 'error');
+        }
+    }
+
+    async function cargarSucursales() {
+        try {
+            const response = await fetch(API_CITAS);
+            const sucursales = await response.json();
+
+            const select = document.getElementById('sucursal');
+            select.innerHTML = '<option value="">Seleccione una sucursal</option>';
+
+            sucursales.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.idSucursal;
+                option.textContent = `${s.nombreSucursal} - ${s.direccion}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function mostrarResumen() {
+        if (!carritoData || !carritoData.items) return;
+
+        const container = document.getElementById('cartItems');
+        container.innerHTML = carritoData.items.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <strong>${item.nombreProducto}</strong><br>
+                        <small>Cantidad: ${item.cantidad}</small>
+                    </div>
+                    <div>S/ ${item.subtotal.toFixed(2)}</div>
+                </div>
+            `).join('');
+
+        document.getElementById('subtotal').textContent = 'S/ ' + carritoData.total.toFixed(2);
+        calcularTotal();
+    }
+
+    function configurarEventos() {
+        // Cambio tipo entrega
+        document.querySelectorAll('input[name="tipoEntrega"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'Envio') {
+                    document.getElementById('direccionSection').style.display = 'block';
+                    document.getElementById('sucursalSection').style.display = 'none';
+                    document.getElementById('costoEnvio').textContent = 'S/ 15.00';
+                } else {
+                    document.getElementById('direccionSection').style.display = 'none';
+                    document.getElementById('sucursalSection').style.display = 'block';
+                    document.getElementById('costoEnvio').textContent = 'S/ 0.00';
+                }
+                calcularTotal();
+            });
+        });
+
+        // Submit form
+        document.getElementById('checkoutForm').addEventListener('submit', procesarPedido);
+    }
+
+    function selectPayment(id) {
+        document.querySelectorAll('.payment-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+        document.getElementById('pago' + id).checked = true;
+    }
+
+    function calcularTotal() {
+        const subtotal = carritoData ? carritoData.total : 0;
+        const envio = document.getElementById('envio').checked ? 15 : 0;
+        const total = subtotal + envio;
+        document.getElementById('total').textContent = 'S/ ' + total.toFixed(2);
+    }
+
+    async function procesarPedido(e) {
+        e.preventDefault();
+
+        if (!carritoData || carritoData.items.length === 0) {
+            showMessage('El carrito está vacío', 'error');
+            return;
+        }
+
+        const tipoEntrega = document.querySelector('input[name="tipoEntrega"]:checked').value;
+        const metodoPago = document.querySelector('input[name="metodoPago"]:checked').value;
+
+        const pedidoData = {
+            idUsuario: ID_USUARIO,
+            tipoEntrega: tipoEntrega,
+            idMetodoPago: parseInt(metodoPago),
+            notas: document.getElementById('notas').value
+        };
+
+        if (tipoEntrega === 'Envio') {
+            // Primero crear dirección
+            const direccion = {
+                idUsuario: ID_USUARIO,
+                nombreDestinatario: document.getElementById('nombreDestinatario').value,
+                telefonoDestinatario: document.getElementById('telefono').value,
+                departamento: document.getElementById('departamento').value,
+                provincia: document.getElementById('provincia').value,
+                distrito: document.getElementById('distrito').value,
+                direccionLinea1: document.getElementById('direccion').value,
+                referencia: document.getElementById('referencia').value,
+                codigoPostal: document.getElementById('codigoPostal').value,
+                esPrincipal: true
+            };
+
+            try {
+                const dirResponse = await fetch('http://localhost:8084/direcciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(direccion)
+                });
+                const dirData = await dirResponse.json();
+                pedidoData.idDireccionEnvio = dirData.idDireccion;
+            } catch (error) {
+                showMessage('Error al guardar dirección', 'error');
+                return;
+            }
+        } else {
+            pedidoData.idSucursalRecojo = parseInt(document.getElementById('sucursal').value);
+        }
+
+        try {
+            const response = await fetch(API_VENTAS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedidoData)
+            });
+
+            if (response.ok) {
+                const pedido = await response.json();
+                showMessage('¡Pedido creado exitosamente! Número: ' + pedido.numeroPedido, 'success');
+
+                setTimeout(() => {
+                    window.location.href = 'pedidos.html';
+                }, 2000);
+            } else {
+                showMessage('Error al procesar el pedido', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('Error de conexión', 'error');
+        }
+    }
+
+    function showMessage(text, type) {
+        const msg = document.getElementById('message');
+        msg.textContent = text;
+        msg.className = 'message ' + type;
+        msg.style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+</script>
+</body>
+</html>

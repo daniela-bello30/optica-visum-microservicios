@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .citas-list {
+            margin-top: 40px;
+        }
+
+        .cita-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .cita-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .cita-numero {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .cita-estado {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .estado-programada {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .estado-confirmada {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📅 Agendar Cita Médica</h1>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <h2>Nueva Cita</h2>
+
+        <div id="message" class="message"></div>
+
+        <form id="citaForm">
+            <div class="form-group">
+                <label for="sucursal">Sucursal:</label>
+                <select id="sucursal" required>
+                    <option value="">Seleccione una sucursal</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tipoServicio">Tipo de Servicio:</label>
+                <select id="tipoServicio" required>
+                    <option value="">Seleccione un servicio</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora">Hora:</label>
+                    <input type="time" id="hora" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notas">Notas (opcional):</label>
+                <textarea id="notas" rows="3" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Agendar Cita</button>
+        </form>
+    </div>
+
+    <div class="citas-list">
+        <h2>Mis Citas</h2>
+        <div id="citasList"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8085';
+    const ID_USUARIO = 1; // Obtener del localStorage en producción
+
+    window.onload = async () => {
+        await cargarSucursales();
+        await cargarTiposServicio();
+        await cargarCitas();
+
+        // Establecer fecha mínima como hoy
+        document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+    };
+
+    async function cargarSucursales() {
+        try {
+            const response = await fetch(`${API_URL}/sucursales`);
+            const sucursales = await response.json();
+
+            const select = document.getElementById('sucursal');
+            sucursales.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.idSucursal;
+                option.textContent = `${s.nombreSucursal} - ${s.distrito}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function cargarTiposServicio() {
+        try {
+            const response = await fetch(`${API_URL}/tipos-servicio`);
+            const servicios = await response.json();
+
+            const select = document.getElementById('tipoServicio');
+            servicios.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.idTipoServicio;
+                option.textContent = `${s.nombreServicio} (${s.duracionMinutos} min) - S/ ${s.precio}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function cargarCitas() {
+        try {
+            const response = await fetch(`${API_URL}/citas/usuario/${ID_USUARIO}`);
+            const citas = await response.json();
+            mostrarCitas(citas);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function mostrarCitas(citas) {
+        const container = document.getElementById('citasList');
+
+        if (citas.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999;">No tienes citas agendadas</p>';
+            return;
+        }
+
+        container.innerHTML = citas.map(cita => `
+                <div class="cita-card">
+                    <div class="cita-header">
+                        <span class="cita-numero">${cita.numeroCita}</span>
+                        <span class="cita-estado estado-${cita.estadoCita.toLowerCase()}">${cita.estadoCita}</span>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <strong>${cita.tipoServicio.nombreServicio}</strong>
+                    </div>
+                    <div style="color:#666; font-size:14px;">
+                        📍 ${cita.sucursal.nombreSucursal}<br>
+                        📅 ${cita.fechaCita} a las ${cita.horaCita}
+                    </div>
+                    ${cita.estadoCita === 'Programada' ? `
+                        <button onclick="cancelarCita(${cita.idCita})" style="margin-top:10px; padding:8px 15px; background:#dc3545; color:white; border:none; border-radius:5px; cursor:pointer;">
+                            Cancelar Cita
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+    }
+
+    document.getElementById('citaForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            idUsuario: ID_USUARIO,
+            idSucursal: parseInt(document.getElementById('sucursal').value),
+            idTipoServicio: parseInt(document.getElementById('tipoServicio').value),
+            fechaCita: document.getElementById('fecha').value,
+            horaCita: document.getElementById('hora').value,
+            notas: document.getElementById('notas').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/citas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                showMessage('Cita agendada exitosamente!', 'success');
+                document.getElementById('citaForm').reset();
+                await cargarCitas();
+            } else {
+                showMessage('Error al agendar la cita', 'error');
+            }
+        } catch (error) {
+            showMessage('Error de conexión', 'error');
+        }
+    });
+
+    async function cancelarCita(id) {
+        if (!confirm('¿Estás seguro de cancelar esta cita?')) return;
+
+        try {
+            await fetch(`${API_URL}/citas/${id}/cancelar`, { method: 'PUT' });
+            await cargarCitas();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function showMessage(text, type) {
+        const msg = document.getElementById('message');
+        msg.textContent = text;
+        msg.className = 'message ' + type;
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 3000);
+    }
+</script>
+</body>
+</html>

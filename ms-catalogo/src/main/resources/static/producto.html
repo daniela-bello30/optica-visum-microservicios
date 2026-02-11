@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Producto - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .producto-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .producto-imagen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            min-height: 400px;
+            font-size: 120px;
+        }
+
+        .producto-info h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .producto-marca {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .producto-precio {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .precio-original {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 24px;
+            margin-left: 15px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-nuevo {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-destacado {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-promocion {
+            background: #dc3545;
+            color: white;
+        }
+
+        .producto-specs {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .spec-row:last-child {
+            border-bottom: none;
+        }
+
+        .spec-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .spec-value {
+            color: #333;
+        }
+
+        .stock-info {
+            padding: 15px;
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .stock-info.sin-stock {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .descripcion {
+            margin: 20px 0;
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .cantidad-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .cantidad-selector label {
+            font-weight: 600;
+        }
+
+        .cantidad-controls {
+            display: flex;
+            align-items: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .cantidad-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f5f5f5;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .cantidad-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .cantidad-input {
+            width: 60px;
+            height: 40px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-agregar {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-agregar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-agregar:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .producto-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🕶️ Detalle del Producto</h1>
+</div>
+
+<div class="container">
+    <a href="catalogo.html" class="btn-volver">← Volver al catálogo</a>
+
+    <div id="productoContainer">
+        <div style="text-align:center; padding:60px;">Cargando producto...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8082/productos';
+    const API_CARRITO = 'http://localhost:8083/carrito';
+    const ID_USUARIO = parseInt(localStorage.getItem('idUsuario') || '1');
+
+    // Obtener ID del producto de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const idProducto = urlParams.get('id');
+
+    window.onload = () => {
+        if (idProducto) {
+            cargarProducto(idProducto);
+        } else {
+            window.location.href = 'catalogo.html';
+        }
+    };
+
+    async function cargarProducto(id) {
+        try {
+            const response = await fetch(`${API_URL}/${id}`);
+            const producto = await response.json();
+            mostrarProducto(producto);
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('productoContainer').innerHTML = `
+                    <div style="text-align:center; padding:60px;">
+                        <h2>Producto no encontrado</h2>
+                        <p>El producto que buscas no existe o no está disponible</p>
+                    </div>
+                `;
+        }
+    }
+
+    function mostrarProducto(p) {
+        const container = document.getElementById('productoContainer');
+
+        const badges = [];
+        if (p.esNuevo) badges.push('<span class="badge badge-nuevo">NUEVO</span>');
+        if (p.esDestacado) badges.push('<span class="badge badge-destacado">DESTACADO</span>');
+        if (p.enPromocion) badges.push('<span class="badge badge-promocion">EN PROMOCIÓN</span>');
+
+        const tieneStock = p.stock > 0;
+        const precioMostrar = p.precioDescuento || p.precioUnitario;
+        const tieneDescuento = p.precioDescuento && p.precioDescuento < p.precioUnitario;
+
+        container.innerHTML = `
+                <div class="producto-container">
+                    <div class="producto-imagen">
+                        👓
+                    </div>
+
+                    <div class="producto-info">
+                        <div class="producto-marca">${p.marca.nombreMarca}</div>
+                        <h1>${p.nombreProducto}</h1>
+
+                        <div class="badges">
+                            ${badges.join('')}
+                        </div>
+
+                        <div class="producto-precio">
+                            S/ ${precioMostrar.toFixed(2)}
+                            ${tieneDescuento ? `<span class="precio-original">S/ ${p.precioUnitario.toFixed(2)}</span>` : ''}
+                        </div>
+
+                        <div class="stock-info ${!tieneStock ? 'sin-stock' : ''}">
+                            ${tieneStock
+            ? `✅ En stock (${p.stock} disponibles)`
+            : '❌ Producto agotado'}
+                        </div>
+
+                        <div class="producto-specs">
+                            <div class="spec-row">
+                                <span class="spec-label">Categoría:</span>
+                                <span class="spec-value">${p.categoria.nombreCategoria}</span>
+                            </div>
+                            ${p.color ? `
+                            <div class="spec-row">
+                                <span class="spec-label">Color:</span>
+                                <span class="spec-value">${p.color}</span>
+                            </div>
+                            ` : ''}
+                            ${p.forma ? `
+                            <div class="spec-row">
+                                <span class="spec-label">Forma:</span>
+                                <span class="spec-value">${p.forma}</span>
+                            </div>
+                            ` : ''}
+                            ${p.material ? `
+                            <div class="spec-row">
+                                <span class="spec-label">Material:</span>
+                                <span class="spec-value">${p.material}</span>
+                            </div>
+                            ` : ''}
+                            <div class="spec-row">
+                                <span class="spec-label">Género:</span>
+                                <span class="spec-value">${p.genero}</span>
+                            </div>
+                        </div>
+
+                        ${p.descripcion ? `
+                        <div class="descripcion">
+                            <h3>Descripción</h3>
+                            <p>${p.descripcion}</p>
+                        </div>
+                        ` : ''}
+
+                        <div class="cantidad-selector">
+                            <label>Cantidad:</label>
+                            <div class="cantidad-controls">
+                                <button class="cantidad-btn" onclick="cambiarCantidad(-1)">-</button>
+                                <input type="number" id="cantidad" class="cantidad-input" value="1" min="1" max="${p.stock}" readonly>
+                                <button class="cantidad-btn" onclick="cambiarCantidad(1)">+</button>
+                            </div>
+                        </div>
+
+                        <button
+                            class="btn-agregar"
+                            onclick="agregarAlCarrito(${p.idProducto})"
+                            ${!tieneStock ? 'disabled' : ''}>
+                            ${tieneStock ? '🛒 Agregar al Carrito' : 'Producto Agotado'}
+                        </button>
+                    </div>
+                </div>
+            `;
+    }
+
+    function cambiarCantidad(delta) {
+        const input = document.getElementById('cantidad');
+        const nuevaCantidad = parseInt(input.value) + delta;
+        const max = parseInt(input.max);
+
+        if (nuevaCantidad >= 1 && nuevaCantidad <= max) {
+            input.value = nuevaCantidad;
+        }
+    }
+
+    async function agregarAlCarrito(idProducto) {
+        const cantidad = parseInt(document.getElementById('cantidad').value);
+
+        try {
+            const response = await fetch(
+                `${API_CARRITO}/${ID_USUARIO}/agregar?idProducto=${idProducto}&cantidad=${cantidad}`,
+                { method: 'POST' }
+            );
+
+            if (response.ok) {
+                alert('✅ Producto agregado al carrito');
+                // Opcional: redirigir al carrito
+                // window.location.href = 'http://localhost:8083/carrito.html';
+            } else {
+                alert('❌ Error al agregar al carrito');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error de conexión');
+        }
+    }
+</script>
+</body>
+</html>

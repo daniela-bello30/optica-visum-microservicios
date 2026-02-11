@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .product-stock {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .add-to-cart:hover {
+            background: #5568d3;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-new {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-promo {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🕶️ VISUM - Catálogo de Productos</h1>
+</div>
+
+<div class="container">
+    <div class="filters">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar productos...">
+            <button onclick="buscarProductos()">Buscar</button>
+            <button onclick="cargarProductos()">Ver Todos</button>
+        </div>
+    </div>
+
+    <div id="productsGrid" class="products-grid">
+        <!-- Productos se cargan aquí -->
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8082/productos';
+
+    // Cargar productos al iniciar
+    window.onload = cargarProductos;
+
+    async function cargarProductos() {
+        try {
+            const response = await fetch(API_URL);
+            const productos = await response.json();
+            mostrarProductos(productos);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al cargar productos');
+        }
+    }
+
+    async function buscarProductos() {
+        const texto = document.getElementById('searchInput').value;
+
+        try {
+            const response = await fetch(`${API_URL}/buscar?texto=${texto}`);
+            const productos = await response.json();
+            mostrarProductos(productos);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function mostrarProductos(productos) {
+        const grid = document.getElementById('productsGrid');
+
+        if (productos.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No se encontraron productos</p>';
+            return;
+        }
+
+        grid.innerHTML = productos.map(producto => `
+                <div class="product-card">
+                    <div class="product-image">👓</div>
+                    <div class="product-info">
+                        <div>
+                            ${producto.esNuevo ? '<span class="badge badge-new">NUEVO</span>' : ''}
+                            ${producto.enPromocion ? '<span class="badge badge-promo">PROMO</span>' : ''}
+                        </div>
+                        <div class="product-name">${producto.nombreProducto}</div>
+                        <div class="product-price">S/ ${producto.precioUnitario.toFixed(2)}</div>
+                        <div class="product-stock">Stock: ${producto.stock} unidades</div>
+                        <div style="font-size:12px; color:#999; margin-bottom:10px;">
+                            ${producto.marca.nombreMarca} | ${producto.categoria.nombreCategoria}
+                        </div>
+                        <button class="add-to-cart" onclick="agregarAlCarrito(${producto.idProducto})">
+                            Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function agregarAlCarrito(idProducto) {
+        alert(`Producto ${idProducto} agregado al carrito!`);
+        // Aquí se conectará con el MS-CARRITO
+    }
+</script>
+</body>
+</html>

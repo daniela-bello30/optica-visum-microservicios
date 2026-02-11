@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .pedido-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .pedido-numero {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .pedido-fecha {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .estado-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .estado-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .estado-confirmado {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .estado-en-preparacion {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estado-enviado {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .estado-entregado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .estado-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pedido-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pedido-items {
+            margin-top: 20px;
+        }
+
+        .item-producto {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-producto:last-child {
+            border-bottom: none;
+        }
+
+        .pedido-totales {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .total-final {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #667eea;
+        }
+
+        .btn-detalle {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-detalle:hover {
+            background: #5568d3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .empty-state h2 {
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📦 Mis Pedidos - VISUM</h1>
+</div>
+
+<div class="container">
+    <div id="pedidosContainer">
+        <!-- Pedidos se cargan aquí -->
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8084/pedidos';
+    const ID_USUARIO = parseInt(localStorage.getItem('idUsuario') || '1');
+
+    window.onload = cargarPedidos;
+
+    async function cargarPedidos() {
+        try {
+            const response = await fetch(`${API_URL}/usuario/${ID_USUARIO}`);
+            const pedidos = await response.json();
+            mostrarPedidos(pedidos);
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarError();
+        }
+    }
+
+    function mostrarPedidos(pedidos) {
+        const container = document.getElementById('pedidosContainer');
+
+        if (!pedidos || pedidos.length === 0) {
+            container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No tienes pedidos aún</h2>
+                        <p>Cuando realices una compra, aparecerá aquí</p>
+                    </div>
+                `;
+            return;
+        }
+
+        container.innerHTML = pedidos.map(pedido => `
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <div>
+                            <div class="pedido-numero">${pedido.numeroPedido}</div>
+                            <div class="pedido-fecha">${formatearFecha(pedido.fechaPedido)}</div>
+                        </div>
+                        <div class="estado-badge estado-${pedido.estadoPedido.toLowerCase().replace(' ', '-')}">
+                            ${pedido.estadoPedido}
+                        </div>
+                    </div>
+
+                    <div class="pedido-info">
+                        <div class="info-item">
+                            <div class="info-label">Tipo de Entrega</div>
+                            <div class="info-value">${pedido.tipoEntrega}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Método de Pago</div>
+                            <div class="info-value">${pedido.metodoPago.nombreMetodo}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Estado de Pago</div>
+                            <div class="info-value">${pedido.estadoPago}</div>
+                        </div>
+                    </div>
+
+                    ${pedido.direccionEnvio ? `
+                        <div class="info-item" style="margin-top:10px;">
+                            <div class="info-label">Dirección de Envío</div>
+                            <div class="info-value">
+                                ${pedido.direccionEnvio.direccionLinea1},
+                                ${pedido.direccionEnvio.distrito},
+                                ${pedido.direccionEnvio.provincia}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="pedido-totales">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>S/ ${pedido.subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Envío:</span>
+                            <span>S/ ${pedido.costoEnvio.toFixed(2)}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Descuento:</span>
+                            <span>- S/ ${pedido.descuento.toFixed(2)}</span>
+                        </div>
+                        <div class="total-row total-final">
+                            <span>TOTAL:</span>
+                            <span>S/ ${pedido.total.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-detalle" onclick="verDetalle(${pedido.idPedido})">
+                        Ver Detalle del Pedido
+                    </button>
+                </div>
+            `).join('');
+    }
+
+    function formatearFecha(fechaStr) {
+        const fecha = new Date(fechaStr);
+        const opciones = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return fecha.toLocaleDateString('es-ES', opciones);
+    }
+
+    function verDetalle(idPedido) {
+        window.location.href = `detalle-pedido.html?id=${idPedido}`;
+    }
+
+    function mostrarError() {
+        const container = document.getElementById('pedidosContainer');
+        container.innerHTML = `
+                <div class="empty-state">
+                    <h2>Error al cargar pedidos</h2>
+                    <p>Por favor, intenta nuevamente</p>
+                </div>
+            `;
+    }
+</script>
+</body>
+</html>

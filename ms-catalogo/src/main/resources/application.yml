@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/optica_catalogo
     username: postgres
-    password: admin
+    password: Konecta1234
     driver-class-name: org.postgresql.Driver
 
   jpa:

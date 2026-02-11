@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .cart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .item-price {
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 20px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .quantity-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .quantity {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .item-subtotal {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+
+        .cart-summary {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .total-row {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🛒 Mi Carrito de Compras</h1>
+</div>
+
+<div class="container">
+    <div class="cart-container">
+        <div id="cartItems">
+            <!-- Items del carrito -->
+        </div>
+
+        <div id="cartSummary" class="cart-summary" style="display: none;">
+            <div class="summary-row">
+                <span>Cantidad de items:</span>
+                <span id="itemCount">0</span>
+            </div>
+            <div class="summary-row total-row">
+                <span>TOTAL:</span>
+                <span id="totalAmount">S/ 0.00</span>
+            </div>
+            <button class="checkout-btn" onclick="procederAlPago()">
+                Proceder al Pago
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8083/carrito';
+    const ID_USUARIO = 1; // Obtener del localStorage en producción
+
+    window.onload = cargarCarrito;
+
+    async function cargarCarrito() {
+        try {
+            const response = await fetch(`${API_URL}/${ID_USUARIO}`);
+            const carrito = await response.json();
+            mostrarCarrito(carrito);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function mostrarCarrito(carrito) {
+        const container = document.getElementById('cartItems');
+        const summary = document.getElementById('cartSummary');
+
+        if (!carrito.items || carrito.items.length === 0) {
+            container.innerHTML = `
+                    <div class="empty-cart">
+                        <h2>Tu carrito está vacío</h2>
+                        <p>Agrega productos para comenzar tu compra</p>
+                    </div>
+                `;
+            summary.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = carrito.items.map(item => `
+                <div class="cart-item">
+                    <div class="item-info">
+                        <div class="item-name">${item.nombreProducto}</div>
+                        <div class="item-price">S/ ${item.precioUnitario.toFixed(2)} c/u</div>
+                    </div>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="actualizarCantidad(${item.idProducto}, ${item.cantidad - 1})">-</button>
+                        <span class="quantity">${item.cantidad}</span>
+                        <button class="quantity-btn" onclick="actualizarCantidad(${item.idProducto}, ${item.cantidad + 1})">+</button>
+                    </div>
+                    <div class="item-subtotal">S/ ${item.subtotal.toFixed(2)}</div>
+                    <button class="remove-btn" onclick="eliminarProducto(${item.idProducto})">Eliminar</button>
+                </div>
+            `).join('');
+
+        document.getElementById('itemCount').textContent = carrito.cantidadItems;
+        document.getElementById('totalAmount').textContent = 'S/ ' + carrito.total.toFixed(2);
+        summary.style.display = 'block';
+    }
+
+    async function actualizarCantidad(idProducto, nuevaCantidad) {
+        if (nuevaCantidad < 1) return;
+
+        try {
+            const response = await fetch(
+                `${API_URL}/${ID_USUARIO}/actualizar?idProducto=${idProducto}&cantidad=${nuevaCantidad}`,
+                { method: 'PUT' }
+            );
+            const carrito = await response.json();
+            mostrarCarrito(carrito);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function eliminarProducto(idProducto) {
+        try {
+            await fetch(`${API_URL}/${ID_USUARIO}/eliminar/${idProducto}`, {
+                method: 'DELETE'
+            });
+            cargarCarrito();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function procederAlPago() {
+        alert('Redirigiendo al checkout...');
+        // Aquí se conectará con MS-VENTAS
+    }
+</script>
+</body>
+</html>
