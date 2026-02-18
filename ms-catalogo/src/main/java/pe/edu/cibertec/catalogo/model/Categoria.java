@@ -28,4 +28,6 @@ public class Categoria {
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+
 }

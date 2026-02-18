@@ -1,32 +1,97 @@
 package pe.edu.cibertec.catalogo.repository;
 
-import pe.edu.cibertec.catalogo.model.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.math.BigDecimal;
-import java.util.List;
+import pe.edu.cibertec.catalogo.model.Producto;
 
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Repository para la entidad Producto
+ * Define queries personalizadas para operaciones específicas
+ *
+ * @author VISUM Team
+ */
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
-    List<Producto> findByEstadoTrue();
+    /**
+     * Encuentra todos los productos activos
+     */
+    List<Producto> findByActivoTrue();
 
-    List<Producto> findByCategoria_IdCategoria(Long idCategoria);
+    /**
+     * Encuentra productos destacados y activos
+     */
+    List<Producto> findByDestacadoTrueAndActivoTrue();
 
-    List<Producto> findByMarca_IdMarca(Long idMarca);
+    /**
+     * Encuentra productos nuevos y activos
+     */
+    List<Producto> findByEsNuevoTrueAndActivoTrue();
 
-    List<Producto> findByEsDestacadoTrue();
+    /**
+     * Busca productos por texto usando búsqueda en nombre o descripción
+     * Busca en nombre y descripción
+     */
+    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
+            "(LOWER(p.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
+            "LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    List<Producto> buscarPorTexto(@Param("texto") String texto);
 
-    List<Producto> findByEsNuevoTrue();
+    // Agregar al ProductoRepository.java
 
-    List<Producto> findByEnPromocionTrue();
+    List<Producto> findByCategoriaIdCategoriaAndActivoTrue(Long idCategoria);
+    List<Producto> findByMarcaIdMarcaAndActivoTrue(Long idMarca);
+    /**
+     * Encuentra productos por categoría
+     */
+    @Query("SELECT p FROM Producto p WHERE p.categoria.idCategoria = :idCategoria AND p.activo = true")
+    List<Producto> findByCategoria(@Param("idCategoria") Long idCategoria);
 
-    @Query("SELECT p FROM Producto p WHERE p.estado = true AND " +
-            "LOWER(p.nombreProducto) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    List<Producto> buscarPorNombre(String texto);
+    /**
+     * Encuentra productos por marca
+     */
+    @Query("SELECT p FROM Producto p WHERE p.marca.idMarca = :idMarca AND p.activo = true")
+    List<Producto> findByMarca(@Param("idMarca") Long idMarca);
 
-    @Query("SELECT p FROM Producto p WHERE p.estado = true AND " +
-            "p.precioUnitario BETWEEN :min AND :max")
-    List<Producto> buscarPorRangoPrecio(BigDecimal min, BigDecimal max);
+    /**
+     * Encuentra productos con stock bajo (menos de cierta cantidad)
+     */
+    @Query("SELECT p FROM Producto p WHERE p.stock < :cantidad AND p.activo = true")
+    List<Producto> findByStockBajo(@Param("cantidad") Integer cantidad);
+
+    /**
+     * Encuentra productos por género
+     */
+    List<Producto> findByGeneroAndActivoTrue(String genero);
+
+    /**
+     * Verifica si existe un producto con el SKU dado
+     */
+    boolean existsBySku(String sku);
+
+    /**
+     * Verifica si existe un producto con el código de barras dado
+     */
+    boolean existsByCodigoBarras(String codigoBarras);
+
+    /**
+     * Encuentra un producto por SKU
+     */
+    Optional<Producto> findBySku(String sku);
+
+    /**
+     * Encuentra un producto por código de barras
+     */
+    Optional<Producto> findByCodigoBarras(String codigoBarras);
+
+    /**
+     * Encuentra productos con descuento
+     */
+    @Query("SELECT p FROM Producto p WHERE p.descuento > 0 AND p.activo = true")
+    List<Producto> findProductosConDescuento();
 }

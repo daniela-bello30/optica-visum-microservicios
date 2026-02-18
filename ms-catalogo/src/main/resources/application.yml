@@ -1,5 +1,10 @@
 server:
   port: 8082
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
 
 spring:
   application:
@@ -10,17 +15,38 @@ spring:
     username: postgres
     password: Konecta1234
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
 
+  # Configuración de Actuator para health checks
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics
+    endpoint:
+      health:
+        show-details: when-authorized
+
+# Configuración de Eureka Client
 eureka:
   client:
     service-url:
@@ -29,9 +55,53 @@ eureka:
     register-with-eureka: true
   instance:
     prefer-ip-address: true
-    instance-id: ${spring.application.name}:${server.port}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    metadata-map:
+      zone: zone1
+      version: 1.0.0
 
+# Configuración de Springdoc OpenAPI (Swagger)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    filter: true
+    display-request-duration: true
+  show-actuator: true
+
+# Configuración de Logging
 logging:
   level:
+    root: INFO
     pe.edu.cibertec.catalogo: DEBUG
+    org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ms-catalogo.log
+    max-size: 10MB
+    max-history: 30
+
+# Configuración de validación
+spring.mvc:
+  throw-exception-if-no-handler-found: true
+
+# Información de la aplicación (para Actuator /info)
+info:
+  app:
+    name: ${spring.application.name}
+    description: Microservicio de Catálogo de Productos - VISUM
+    version: 2.0.0
+    encoding: UTF-8
+    java:
+      version: @java.version@

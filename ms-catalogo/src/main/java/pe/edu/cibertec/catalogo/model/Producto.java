@@ -1,13 +1,18 @@
 package pe.edu.cibertec.catalogo.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "productos")
+@Data  // Esto genera getters, setters, equals, hashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class Producto {
 
     @Id
@@ -15,28 +20,28 @@ public class Producto {
     @Column(name = "id_producto")
     private Long idProducto;
 
-    @Column(name = "nombre_producto", nullable = false, length = 200)
-    private String nombreProducto;
+    @Column(nullable = false, length = 200)
+    private String nombre;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2000)
     private String descripcion;
 
-    @ManyToOne
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal precio;
+
+    @Column(precision = 5, scale = 2)
+    private BigDecimal descuento;
+
+    @Column(nullable = false)
+    private Integer stock;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_marca", nullable = false)
     private Marca marca;
-
-    @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precioUnitario;
-
-    @Column(name = "precio_descuento", precision = 10, scale = 2)
-    private BigDecimal precioDescuento;
-
-    @Column(nullable = false)
-    private Integer stock = 0;
 
     @Column(length = 50)
     private String color;
@@ -47,24 +52,30 @@ public class Producto {
     @Column(length = 100)
     private String material;
 
-    @Column(length = 50)
-    private String genero = "Unisex";
+    @Column(length = 20)
+    private String genero;
 
-    @Column(name = "es_destacado")
-    private Boolean esDestacado = false;
+    @Column(name = "destacado")
+    private Boolean destacado = false;
 
     @Column(name = "es_nuevo")
     private Boolean esNuevo = false;
 
-    @Column(name = "en_promocion")
-    private Boolean enPromocion = false;
+    @Column(length = 50, unique = true)
+    private String sku;
+
+    @Column(name = "codigo_barras", length = 50, unique = true)
+    private String codigoBarras;
 
     @Column(nullable = false)
-    private Boolean estado = true;
+    private Boolean activo = true;  // ← IMPORTANTE: Este campo es clave
 
-    @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
 
-    @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion = LocalDateTime.now();
+    @Column(name = "fecha_modificacion")
+    private LocalDateTime fechaModificacion;
+
+
+
 }
