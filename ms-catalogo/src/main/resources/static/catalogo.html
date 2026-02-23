@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo - VISUM</title>
+    <title>Catálogo de Productos - VISUM</title>
     <style>
         * {
             margin: 0;
@@ -13,225 +13,577 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-
-        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            min-height: 100vh;
             padding: 20px;
-            text-align: center;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
         }
 
-        .filters {
+        header {
             background: white;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
 
-        .search-box {
+        h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .search-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-top: 20px;
         }
 
-        .search-box input {
+        .search-bar input {
             flex: 1;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 2px solid #e0e0e0;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 16px;
         }
 
-        .search-box button {
+        .search-bar button {
             padding: 12px 30px;
             background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background: #5568d3;
+        }
+
+        .filters {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filters select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
         }
 
         .product-card {
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
 
         .product-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
 
         .product-image {
             width: 100%;
-            height: 200px;
+            height: 250px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 48px;
+            font-size: 3rem;
         }
 
         .product-info {
-            padding: 15px;
+            padding: 20px;
         }
 
         .product-name {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
             color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            height: 40px;
+            overflow: hidden;
+        }
+
+        .product-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .product-price {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: bold;
             color: #667eea;
-            margin-bottom: 10px;
+        }
+
+        .product-discount {
+            background: #ff4757;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
         }
 
         .product-stock {
-            font-size: 12px;
-            color: #666;
+            font-size: 0.9rem;
+            color: #4CAF50;
+        }
+
+        .product-stock.low {
+            color: #ff9800;
+        }
+
+        .product-stock.out {
+            color: #f44336;
+        }
+
+        .product-badges {
+            display: flex;
+            gap: 5px;
             margin-bottom: 10px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .badge-new {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-featured {
+            background: #FFC107;
+            color: #333;
         }
 
         .add-to-cart {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
         }
 
         .add-to-cart:hover {
             background: #5568d3;
         }
 
-        .badge {
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 10px;
+            color: #666;
+        }
+
+        .category-pill {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-right: 5px;
-        }
-
-        .badge-new {
-            background: #28a745;
-            color: white;
-        }
-
-        .badge-promo {
-            background: #dc3545;
-            color: white;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-<div class="header">
-    <h1>🕶️ VISUM - Catálogo de Productos</h1>
-</div>
-
 <div class="container">
-    <div class="filters">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Buscar productos...">
+    <header>
+        <h1>🕶️ Catálogo VISUM</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Buscar productos por nombre o descripción...">
             <button onclick="buscarProductos()">Buscar</button>
             <button onclick="cargarProductos()">Ver Todos</button>
         </div>
+    </header>
+
+    <div class="filters">
+        <select id="filterCategoria" onchange="aplicarFiltros()">
+            <option value="">Todas las categorías</option>
+        </select>
+        <select id="filterMarca" onchange="aplicarFiltros()">
+            <option value="">Todas las marcas</option>
+        </select>
+        <select id="filterGenero" onchange="aplicarFiltros()">
+            <option value="">Todos los géneros</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Mujer">Mujer</option>
+            <option value="Unisex">Unisex</option>
+        </select>
     </div>
 
-    <div id="productsGrid" class="products-grid">
-        <!-- Productos se cargan aquí -->
+    <div id="productosContainer">
+        <div class="loading">⏳ Cargando productos...</div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'http://localhost:8082/productos';
+    // URL base de la API
+    const API_URL = 'http://localhost:8082';
 
-    // Cargar productos al iniciar
-    window.onload = cargarProductos;
+    // Variable global para almacenar todos los productos
+    let todosLosProductos = [];
 
+    // Cargar productos al iniciar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Página cargada, iniciando carga de productos...');
+        cargarProductos();
+    });
+
+    // Función principal para cargar productos
     async function cargarProductos() {
+        const container = document.getElementById('productosContainer');
+        container.innerHTML = '<div class="loading">⏳ Cargando productos...</div>';
+
         try {
-            const response = await fetch(API_URL);
-            const productos = await response.json();
+            console.log('Intentando conectar a:', API_URL + '/productos');
+
+            const response = await fetch(API_URL + '/productos', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Respuesta recibida:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Datos recibidos:', data);
+
+            // Verificar si la respuesta tiene la estructura ApiResponse
+            let productos = [];
+            if (data.success && data.data) {
+                productos = data.data;
+            } else if (Array.isArray(data)) {
+                productos = data;
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
+
+            todosLosProductos = productos;
+
+            if (productos.length === 0) {
+                container.innerHTML = `
+                        <div class="empty">
+                            <h2>😕 No hay productos disponibles</h2>
+                            <p>Aún no hay productos en el catálogo.</p>
+                        </div>
+                    `;
+                return;
+            }
+
             mostrarProductos(productos);
+            cargarFiltros(productos);
+
         } catch (error) {
-            console.error('Error:', error);
-            alert('Error al cargar productos');
+            console.error('Error detallado:', error);
+
+            container.innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error al cargar productos</h2>
+                        <p><strong>Detalles:</strong> ${error.message}</p>
+                        <p style="margin-top: 15px;">
+                            <strong>Posibles causas:</strong><br>
+                            1. El microservicio no está corriendo en ${API_URL}<br>
+                            2. Problema de CORS<br>
+                            3. Error en el endpoint /productos
+                        </p>
+                        <button onclick="cargarProductos()"
+                                style="margin-top: 20px; padding: 10px 20px; background: white; color: #f44336; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                            🔄 Reintentar
+                        </button>
+                    </div>
+                `;
         }
     }
 
-    async function buscarProductos() {
-        const texto = document.getElementById('searchInput').value;
-
-        try {
-            const response = await fetch(`${API_URL}/buscar?texto=${texto}`);
-            const productos = await response.json();
-            mostrarProductos(productos);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
+    // Mostrar productos en el grid
     function mostrarProductos(productos) {
-        const grid = document.getElementById('productsGrid');
+        const container = document.getElementById('productosContainer');
 
         if (productos.length === 0) {
-            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No se encontraron productos</p>';
+            container.innerHTML = `
+                    <div class="empty">
+                        <h2>😕 No se encontraron productos</h2>
+                        <p>Intenta con otros filtros o búsqueda.</p>
+                    </div>
+                `;
             return;
         }
 
-        grid.innerHTML = productos.map(producto => `
-                <div class="product-card">
-                    <div class="product-image">👓</div>
+        container.innerHTML = `
+                <div class="products-grid">
+                    ${productos.map(producto => crearTarjetaProducto(producto)).join('')}
+                </div>
+            `;
+    }
+
+    // Crear HTML de tarjeta de producto
+    function crearTarjetaProducto(producto) {
+        const precioFinal = producto.precioFinal || calcularPrecioFinal(producto);
+        const tieneDescuento = producto.descuento && producto.descuento > 0;
+
+        let stockClass = '';
+        let stockText = '';
+        if (producto.stock === 0) {
+            stockClass = 'out';
+            stockText = 'Agotado';
+        } else if (producto.stock < 10) {
+            stockClass = 'low';
+            stockText = `Solo ${producto.stock} disponibles`;
+        } else {
+            stockText = `Stock: ${producto.stock}`;
+        }
+
+        return `
+                <div class="product-card" onclick="verDetalle(${producto.idProducto})">
+                    <div class="product-image">
+                        🕶️
+                    </div>
                     <div class="product-info">
-                        <div>
+                        <div class="product-badges">
                             ${producto.esNuevo ? '<span class="badge badge-new">NUEVO</span>' : ''}
-                            ${producto.enPromocion ? '<span class="badge badge-promo">PROMO</span>' : ''}
+                            ${producto.destacado ? '<span class="badge badge-featured">DESTACADO</span>' : ''}
                         </div>
-                        <div class="product-name">${producto.nombreProducto}</div>
-                        <div class="product-price">S/ ${producto.precioUnitario.toFixed(2)}</div>
-                        <div class="product-stock">Stock: ${producto.stock} unidades</div>
-                        <div style="font-size:12px; color:#999; margin-bottom:10px;">
-                            ${producto.marca.nombreMarca} | ${producto.categoria.nombreCategoria}
+
+                        ${producto.categoria ? `<span class="category-pill">${producto.categoria.nombre}</span>` : ''}
+
+                        <div class="product-name">${producto.nombre}</div>
+                        <div class="product-description">${producto.descripcion || 'Sin descripción'}</div>
+
+                        <div class="product-details">
+                            <div>
+                                <div class="product-price">
+                                    S/ ${precioFinal.toFixed(2)}
+                                    ${tieneDescuento ? `<small style="text-decoration: line-through; color: #999; font-size: 0.8rem; display: block;">S/ ${producto.precio.toFixed(2)}</small>` : ''}
+                                </div>
+                                ${tieneDescuento ? `<span class="product-discount">-${producto.descuento}%</span>` : ''}
+                            </div>
+                            <div class="product-stock ${stockClass}">
+                                ${stockText}
+                            </div>
                         </div>
-                        <button class="add-to-cart" onclick="agregarAlCarrito(${producto.idProducto})">
-                            Agregar al Carrito
+
+                        <button class="add-to-cart"
+                                onclick="event.stopPropagation(); agregarAlCarrito(${producto.idProducto})"
+                                ${producto.stock === 0 ? 'disabled' : ''}>
+                            ${producto.stock === 0 ? '❌ Agotado' : '🛒 Agregar al Carrito'}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
     }
 
-    function agregarAlCarrito(idProducto) {
-        alert(`Producto ${idProducto} agregado al carrito!`);
-        // Aquí se conectará con el MS-CARRITO
+    // Calcular precio final con descuento
+    function calcularPrecioFinal(producto) {
+        if (producto.descuento && producto.descuento > 0) {
+            return producto.precio * (1 - producto.descuento / 100);
+        }
+        return producto.precio;
     }
+
+    // Buscar productos
+    async function buscarProductos() {
+        const texto = document.getElementById('searchInput').value.trim();
+
+        if (!texto) {
+            cargarProductos();
+            return;
+        }
+
+        const container = document.getElementById('productosContainer');
+        container.innerHTML = '<div class="loading">🔍 Buscando productos...</div>';
+
+        try {
+            const response = await fetch(`${API_URL}/productos/buscar?texto=${encodeURIComponent(texto)}`);
+
+            if (!response.ok) {
+                throw new Error('Error en la búsqueda');
+            }
+
+            const data = await response.json();
+            const productos = data.success ? data.data : data;
+
+            todosLosProductos = productos;
+            mostrarProductos(productos);
+
+        } catch (error) {
+            console.error('Error en búsqueda:', error);
+            container.innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error en la búsqueda</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+        }
+    }
+
+    // Cargar opciones de filtros
+    function cargarFiltros(productos) {
+        // Categorías únicas
+        const categorias = [...new Set(productos.filter(p => p.categoria).map(p => p.categoria.nombre))];
+        const selectCategoria = document.getElementById('filterCategoria');
+        selectCategoria.innerHTML = '<option value="">Todas las categorías</option>' +
+            categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+        // Marcas únicas
+        const marcas = [...new Set(productos.filter(p => p.marca).map(p => p.marca.nombre))];
+        const selectMarca = document.getElementById('filterMarca');
+        selectMarca.innerHTML = '<option value="">Todas las marcas</option>' +
+            marcas.map(mar => `<option value="${mar}">${mar}</option>`).join('');
+    }
+
+    // Aplicar filtros
+    function aplicarFiltros() {
+        const categoria = document.getElementById('filterCategoria').value;
+        const marca = document.getElementById('filterMarca').value;
+        const genero = document.getElementById('filterGenero').value;
+
+        let productosFiltrados = [...todosLosProductos];
+
+        if (categoria) {
+            productosFiltrados = productosFiltrados.filter(p =>
+                p.categoria && p.categoria.nombre === categoria
+            );
+        }
+
+        if (marca) {
+            productosFiltrados = productosFiltrados.filter(p =>
+                p.marca && p.marca.nombre === marca
+            );
+        }
+
+        if (genero) {
+            productosFiltrados = productosFiltrados.filter(p => p.genero === genero);
+        }
+
+        mostrarProductos(productosFiltrados);
+    }
+
+    // Ver detalle del producto
+    function verDetalle(idProducto) {
+        window.location.href = `producto.html?id=${idProducto}`;
+    }
+
+    // Agregar al carrito (placeholder)
+    async function agregarAlCarrito(idProducto) {
+        // En producción sacaríamos el ID del usuario logueado del localStorage
+        // Por ahora usamos el ID 1 como en el resto de tus HTMLs
+        let ID_USUARIO = null;
+        const usuarioLogueado = localStorage.getItem('usuario');
+
+
+        if (usuarioLogueado) {
+            const userObj = JSON.parse(usuarioLogueado);
+            ID_USUARIO = userObj.idUsuario;
+            console.log("Sesión activa para: " + userObj.email);
+        } else {
+            // Solo redirigir si la página NO es el catálogo o sucursales (que son públicos)
+            const paginaActual = window.location.pathname;
+            if (paginaActual !== '/catalogo.html' && paginaActual !== '/sucursales.html') {
+                alert("⚠️ Debes iniciar sesión.");
+                window.location.href = 'http://localhost:8080/login.html';
+            }
+        }
+
+        // URL del microservicio de Carrito (Puerto 8083)
+        const URL_AGREGAR = `http://localhost:8083/carrito/${ID_USUARIO}/agregar?idProducto=${idProducto}&cantidad=${cantidad}`;
+
+        try {
+            // Hacemos la petición POST al Carrito
+            const response = await fetch(URL_AGREGAR, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const jsonResponse = await response.json();
+
+            // Verificamos si la API nos respondió con éxito
+            if (response.ok && jsonResponse.success) {
+                // Preguntamos al usuario si quiere ir a pagar
+                if (confirm('✅ ¡' + jsonResponse.message + '!\n\n¿Deseas ir a tu carrito ahora?')) {
+                    // Si dice que sí, lo llevamos al HTML del carrito en el MS correspondiente
+                    window.location.href = 'http://localhost:8083/carrito.html';
+                }
+            } else {
+                alert('❌ Error al agregar al carrito: ' + (jsonResponse.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error al conectar con el carrito:', error);
+            alert('❌ Error de conexión. ¿Verificaste que el MS-CARRITO (puerto 8083) esté encendido?');
+        }
+    }
+
+    // Búsqueda al presionar Enter
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            buscarProductos();
+        }
+    });
 </script>
 </body>
 </html>

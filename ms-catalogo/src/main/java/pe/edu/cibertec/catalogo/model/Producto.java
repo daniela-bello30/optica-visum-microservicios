@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "productos")
-@Data  // Esto genera getters, setters, equals, hashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Producto {
@@ -20,16 +20,19 @@ public class Producto {
     @Column(name = "id_producto")
     private Long idProducto;
 
-    @Column(nullable = false, length = 200)
+    // AQUI ARREGLAMOS EL NOMBRE
+    @Column(name = "nombre_producto", nullable = false, length = 200)
     private String nombre;
 
     @Column(length = 2000)
     private String descripcion;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    // AQUI ARREGLAMOS EL PRECIO UNITARIO
+    @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
-    @Column(precision = 5, scale = 2)
+    // AQUI ARREGLAMOS EL PRECIO CON DESCUENTO
+    @Column(name = "precio_descuento", precision = 5, scale = 2)
     private BigDecimal descuento;
 
     @Column(nullable = false)
@@ -55,7 +58,8 @@ public class Producto {
     @Column(length = 20)
     private String genero;
 
-    @Column(name = "destacado")
+    // AQUI ARREGLAMOS EL CAMPO DESTACADO
+    @Column(name = "es_destacado")
     private Boolean destacado = false;
 
     @Column(name = "es_nuevo")
@@ -67,15 +71,14 @@ public class Producto {
     @Column(name = "codigo_barras", length = 50, unique = true)
     private String codigoBarras;
 
-    @Column(nullable = false)
-    private Boolean activo = true;  // ← IMPORTANTE: Este campo es clave
+    // AQUI ARREGLAMOS EL ESTADO (ACTIVO)
+    @Column(name = "estado", nullable = false)
+    private Boolean activo = true;
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "fecha_modificacion")
+    // AQUI ARREGLAMOS LA FECHA DE ACTUALIZACION
+    @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaModificacion;
-
-
-
 }

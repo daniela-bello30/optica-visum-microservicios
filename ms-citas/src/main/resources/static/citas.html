@@ -193,7 +193,25 @@
 
 <script>
     const API_URL = 'http://localhost:8085';
-    const ID_USUARIO = 1; // Obtener del localStorage en producción
+    const usuarioLogueado = localStorage.getItem('usuario');
+    let ID_USUARIO = null;
+
+    if (usuarioLogueado) {
+        const userObj = JSON.parse(usuarioLogueado);
+        ID_USUARIO = userObj.idUsuario;
+        console.log("Sesión activa para: " + userObj.email);
+    } else {
+        const paginaActual = window.location.pathname;
+        // Páginas que permiten ver contenido sin login (pero no comprar/agendar)
+        const paginasPublicas = ['/catalogo.html', '/sucursales.html', '/producto.html'];
+
+        const esPublica = paginasPublicas.some(p => paginaActual.includes(p));
+
+        if (!esPublica) {
+            alert("⚠️ Debes iniciar sesión para acceder a esta función.");
+            window.location.href = 'http://localhost:8080/login.html';
+        }
+    }
 
     window.onload = async () => {
         await cargarSucursales();
@@ -207,7 +225,8 @@
     async function cargarSucursales() {
         try {
             const response = await fetch(`${API_URL}/sucursales`);
-            const sucursales = await response.json();
+            const jsonResponse = await response.json();
+            const sucursales = jsonResponse.data; // 👇 EXTRAEMOS .data
 
             const select = document.getElementById('sucursal');
             sucursales.forEach(s => {
@@ -223,8 +242,10 @@
 
     async function cargarTiposServicio() {
         try {
-            const response = await fetch(`${API_URL}/tipos-servicio`);
-            const servicios = await response.json();
+            const response = await fetch('http://localhost:8080/api/citas/tipos-servicio');
+            const jsonResponse = await response.json();
+            // Fallback por si tipos-servicio aún no usa ApiResponse
+            const servicios = jsonResponse.data ? jsonResponse.data : jsonResponse;
 
             const select = document.getElementById('tipoServicio');
             servicios.forEach(s => {
@@ -241,12 +262,47 @@
     async function cargarCitas() {
         try {
             const response = await fetch(`${API_URL}/citas/usuario/${ID_USUARIO}`);
-            const citas = await response.json();
+            const jsonResponse = await response.json();
+            const citas = jsonResponse.data; // 👇 EXTRAEMOS .data
             mostrarCitas(citas);
         } catch (error) {
             console.error('Error:', error);
         }
     }
+
+    document.getElementById('citaForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            idUsuario: ID_USUARIO,
+            idSucursal: parseInt(document.getElementById('sucursal').value),
+            idTipoServicio: parseInt(document.getElementById('tipoServicio').value),
+            fechaCita: document.getElementById('fecha').value,
+            horaCita: document.getElementById('hora').value,
+            notas: document.getElementById('notas').value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/citas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const jsonResponse = await response.json();
+
+            // APROVECHAMOS EL MENSAJE DEL BACKEND 👇
+            if (response.ok && jsonResponse.success) {
+                showMessage(jsonResponse.message || 'Cita agendada exitosamente!', 'success');
+                document.getElementById('citaForm').reset();
+                await cargarCitas();
+            } else {
+                showMessage(jsonResponse.message || 'Error al agendar la cita', 'error');
+            }
+        } catch (error) {
+            showMessage('Error de conexión', 'error');
+        }
+    });
 
     function mostrarCitas(citas) {
         const container = document.getElementById('citasList');

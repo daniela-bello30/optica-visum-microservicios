@@ -42,3 +42,4 @@ microservices:
     url: http://ms-catalogo
   seguridad:
     url: http://ms-seguridad
+

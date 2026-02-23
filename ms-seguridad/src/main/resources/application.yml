@@ -32,3 +32,4 @@ logging:
   level:
     pe.edu.cibertec.seguridad: DEBUG
     org.hibernate.SQL: DEBUG
+

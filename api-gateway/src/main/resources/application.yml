@@ -7,45 +7,31 @@ spring:
   cloud:
     gateway:
       routes:
-        # Ruta para MS-SEGURIDAD
-        - id: ms-seguridad
+        # Rutas para los HTML (Para que el localStorage se comparta)
+        - id: ms-seguridad-web
           uri: lb://MS-SEGURIDAD
           predicates:
-            - Path=/api/seguridad/**
-          filters:
-            - StripPrefix=2
+            - Path=/login.html, /register.html
 
-        # Ruta para MS-CATALOGO
-        - id: ms-catalogo
+        - id: ms-catalogo-web
           uri: lb://MS-CATALOGO
           predicates:
-            - Path=/api/catalogo/**
-          filters:
-            - StripPrefix=2
+            - Path=/catalogo.html, /producto.html
 
-        # Ruta para MS-CARRITO
-        - id: ms-carrito
+        - id: ms-carrito-web
           uri: lb://MS-CARRITO
           predicates:
-            - Path=/api/carrito/**
-          filters:
-            - StripPrefix=2
+            - Path=/carrito.html
 
-        # Ruta para MS-VENTAS
-        - id: ms-ventas
+        - id: ms-ventas-web
           uri: lb://MS-VENTAS
           predicates:
-            - Path=/api/ventas/**
-          filters:
-            - StripPrefix=2
+            - Path=/pedidos.html, /checkout.html
 
-        # Ruta para MS-CITAS
-        - id: ms-citas
+        - id: ms-citas-web
           uri: lb://MS-CITAS
           predicates:
-            - Path=/api/citas/**
-          filters:
-            - StripPrefix=2
+            - Path=/citas.html, /sucursales.html, /mis-citas.html
 
       globalcors:
         cors-configurations:

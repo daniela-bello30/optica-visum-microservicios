@@ -251,8 +251,25 @@
 <script>
     const API_URL = 'http://localhost:8082/productos';
     const API_CARRITO = 'http://localhost:8083/carrito';
-    const ID_USUARIO = parseInt(localStorage.getItem('idUsuario') || '1');
+    const usuarioLogueado = localStorage.getItem('usuario');
+    let ID_USUARIO = null;
 
+    if (usuarioLogueado) {
+        const userObj = JSON.parse(usuarioLogueado);
+        ID_USUARIO = userObj.idUsuario;
+        console.log("Sesión activa para: " + userObj.email);
+    } else {
+        const paginaActual = window.location.pathname;
+        // Páginas que permiten ver contenido sin login (pero no comprar/agendar)
+        const paginasPublicas = ['/catalogo.html', '/sucursales.html', '/producto.html'];
+
+        const esPublica = paginasPublicas.some(p => paginaActual.includes(p));
+
+        if (!esPublica) {
+            alert("⚠️ Debes iniciar sesión para acceder a esta función.");
+            window.location.href = 'http://localhost:8080/login.html';
+        }
+    }
     // Obtener ID del producto de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const idProducto = urlParams.get('id');

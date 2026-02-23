@@ -3,6 +3,7 @@ package pe.edu.cibertec.seguridad.service;
 import pe.edu.cibertec.seguridad.dto.LoginRequest;
 import pe.edu.cibertec.seguridad.dto.LoginResponse;
 import pe.edu.cibertec.seguridad.dto.RegisterRequest;
+import pe.edu.cibertec.seguridad.exception.BusinessException;
 import pe.edu.cibertec.seguridad.model.Rol;
 import pe.edu.cibertec.seguridad.model.Usuario;
 import pe.edu.cibertec.seguridad.repository.RolRepository;
@@ -29,7 +30,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
+            throw new BusinessException("Contraseña incorrecta", "AUTH_ERROR");
         }
 
         if (!usuario.getEstado()) {

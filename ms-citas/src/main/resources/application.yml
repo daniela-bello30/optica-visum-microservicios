@@ -40,3 +40,5 @@ logging:
 microservices:
   seguridad:
     url: http://ms-seguridad
+
+

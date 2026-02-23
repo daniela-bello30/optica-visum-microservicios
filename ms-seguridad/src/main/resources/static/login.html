@@ -140,31 +140,23 @@
         const password = document.getElementById('password').value;
 
         try {
-            const response = await fetch(API_URL, {
+            // Llamamos a la API (puede ser a través del gateway o directo al 8081)
+            const response = await fetch('http://localhost:8081/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+            const result = await response.json();
 
-            if (response.ok) {
-                const data = await response.json();
-                showMessage('Login exitoso! Bienvenido ' + data.nombres, 'success');
-
-                // Guardar datos en localStorage
-                localStorage.setItem('usuario', JSON.stringify(data));
-
-                // Redirigir después de 1 segundo
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
+            if (response.ok && result.success) {
+                localStorage.setItem('usuario', JSON.stringify(result.data));
+                // IMPORTANTE: Ahora redirigimos al 8080
+                window.location.href = 'http://localhost:8080/index.html';
             } else {
-                const error = await response.text();
-                showMessage(error, 'error');
+                alert(result.message);
             }
         } catch (error) {
-            showMessage('Error de conexión con el servidor', 'error');
+            alert('Error de conexión');
         }
     });
 

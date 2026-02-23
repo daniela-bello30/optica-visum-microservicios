@@ -177,14 +177,27 @@
 
 <script>
     const API_URL = 'http://localhost:8083/carrito';
-    const ID_USUARIO = 1; // Obtener del localStorage en producción
+    let ID_USUARIO = null;
+    const usuarioLogueado = localStorage.getItem('usuario');
+    if (usuarioLogueado) {
+        const userObj = JSON.parse(usuarioLogueado);
+        ID_USUARIO = userObj.idUsuario;
+        console.log("Sesión activa para: " + userObj.email);
+    } else {
+        // Solo redirigir si la página NO es el catálogo o sucursales (que son públicos)
+        const paginaActual = window.location.pathname;
+        if (paginaActual !== '/catalogo.html' && paginaActual !== '/sucursales.html') {
+            alert("⚠️ Debes iniciar sesión.");
+            window.location.href = 'http://localhost:8080/login.html';
+        }
+    }
 
     window.onload = cargarCarrito;
 
     async function cargarCarrito() {
         try {
             const response = await fetch(`${API_URL}/${ID_USUARIO}`);
-            const carrito = await response.json();
+            const data = await respuesta.json(); const carrito = data.data;
             mostrarCarrito(carrito);
         } catch (error) {
             console.error('Error:', error);
@@ -235,7 +248,7 @@
                 `${API_URL}/${ID_USUARIO}/actualizar?idProducto=${idProducto}&cantidad=${nuevaCantidad}`,
                 { method: 'PUT' }
             );
-            const carrito = await response.json();
+            const data = await respuesta.json(); const carrito = data.data;
             mostrarCarrito(carrito);
         } catch (error) {
             console.error('Error:', error);

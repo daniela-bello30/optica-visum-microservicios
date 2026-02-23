@@ -394,7 +394,26 @@
     const API_CARRITO = 'http://localhost:8083/carrito';
     const API_VENTAS = 'http://localhost:8084/pedidos';
     const API_CITAS = 'http://localhost:8085/sucursales';
-    const ID_USUARIO = parseInt(localStorage.getItem('idUsuario') || '1');
+    // Extraer el ID real del usuario logueado
+    const usuarioLogueado = localStorage.getItem('usuario');
+    let ID_USUARIO = null;
+
+    if (usuarioLogueado) {
+        const userObj = JSON.parse(usuarioLogueado);
+        ID_USUARIO = userObj.idUsuario;
+        console.log("Sesión activa para: " + userObj.email);
+    } else {
+        const paginaActual = window.location.pathname;
+        // Páginas que permiten ver contenido sin login (pero no comprar/agendar)
+        const paginasPublicas = ['/catalogo.html', '/sucursales.html', '/producto.html'];
+
+        const esPublica = paginasPublicas.some(p => paginaActual.includes(p));
+
+        if (!esPublica) {
+            alert("⚠️ Debes iniciar sesión para acceder a esta función.");
+            window.location.href = 'http://localhost:8080/login.html';
+        }
+    }
 
     let carritoData = null;
 
@@ -407,7 +426,9 @@
     async function cargarCarrito() {
         try {
             const response = await fetch(`${API_CARRITO}/${ID_USUARIO}`);
-            carritoData = await response.json();
+            const jsonResponse = await response.json();
+            // EXTRAEMOS .data AQUI 👇
+            carritoData = jsonResponse.data;
             mostrarResumen();
         } catch (error) {
             console.error('Error:', error);
@@ -418,7 +439,9 @@
     async function cargarSucursales() {
         try {
             const response = await fetch(API_CITAS);
-            const sucursales = await response.json();
+            const jsonResponse = await response.json();
+            // EXTRAEMOS .data AQUI 👇
+            const sucursales = jsonResponse.data;
 
             const select = document.getElementById('sucursal');
             select.innerHTML = '<option value="">Seleccione una sucursal</option>';
@@ -432,60 +455,6 @@
         } catch (error) {
             console.error('Error:', error);
         }
-    }
-
-    function mostrarResumen() {
-        if (!carritoData || !carritoData.items) return;
-
-        const container = document.getElementById('cartItems');
-        container.innerHTML = carritoData.items.map(item => `
-                <div class="cart-item">
-                    <div>
-                        <strong>${item.nombreProducto}</strong><br>
-                        <small>Cantidad: ${item.cantidad}</small>
-                    </div>
-                    <div>S/ ${item.subtotal.toFixed(2)}</div>
-                </div>
-            `).join('');
-
-        document.getElementById('subtotal').textContent = 'S/ ' + carritoData.total.toFixed(2);
-        calcularTotal();
-    }
-
-    function configurarEventos() {
-        // Cambio tipo entrega
-        document.querySelectorAll('input[name="tipoEntrega"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.value === 'Envio') {
-                    document.getElementById('direccionSection').style.display = 'block';
-                    document.getElementById('sucursalSection').style.display = 'none';
-                    document.getElementById('costoEnvio').textContent = 'S/ 15.00';
-                } else {
-                    document.getElementById('direccionSection').style.display = 'none';
-                    document.getElementById('sucursalSection').style.display = 'block';
-                    document.getElementById('costoEnvio').textContent = 'S/ 0.00';
-                }
-                calcularTotal();
-            });
-        });
-
-        // Submit form
-        document.getElementById('checkoutForm').addEventListener('submit', procesarPedido);
-    }
-
-    function selectPayment(id) {
-        document.querySelectorAll('.payment-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        event.currentTarget.classList.add('selected');
-        document.getElementById('pago' + id).checked = true;
-    }
-
-    function calcularTotal() {
-        const subtotal = carritoData ? carritoData.total : 0;
-        const envio = document.getElementById('envio').checked ? 15 : 0;
-        const total = subtotal + envio;
-        document.getElementById('total').textContent = 'S/ ' + total.toFixed(2);
     }
 
     async function procesarPedido(e) {
@@ -507,7 +476,6 @@
         };
 
         if (tipoEntrega === 'Envio') {
-            // Primero crear dirección
             const direccion = {
                 idUsuario: ID_USUARIO,
                 nombreDestinatario: document.getElementById('nombreDestinatario').value,
@@ -522,13 +490,14 @@
             };
 
             try {
+                // Asumiendo que /direcciones también devuelve ApiResponse
                 const dirResponse = await fetch('http://localhost:8084/direcciones', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(direccion)
                 });
-                const dirData = await dirResponse.json();
-                pedidoData.idDireccionEnvio = dirData.idDireccion;
+                const dirJsonResponse = await dirResponse.json();
+                pedidoData.idDireccionEnvio = dirJsonResponse.data.idDireccion;
             } catch (error) {
                 showMessage('Error al guardar dirección', 'error');
                 return;
@@ -544,15 +513,18 @@
                 body: JSON.stringify(pedidoData)
             });
 
-            if (response.ok) {
-                const pedido = await response.json();
-                showMessage('¡Pedido creado exitosamente! Número: ' + pedido.numeroPedido, 'success');
+            const jsonResponse = await response.json();
+
+            // VERIFICAMOS jsonResponse.success 👇
+            if (response.ok && jsonResponse.success) {
+                const pedido = jsonResponse.data;
+                showMessage(jsonResponse.message + ' Número: ' + pedido.numeroPedido, 'success');
 
                 setTimeout(() => {
                     window.location.href = 'pedidos.html';
                 }, 2000);
             } else {
-                showMessage('Error al procesar el pedido', 'error');
+                showMessage(jsonResponse.message || 'Error al procesar el pedido', 'error');
             }
         } catch (error) {
             console.error('Error:', error);

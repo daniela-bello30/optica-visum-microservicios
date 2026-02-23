@@ -3,8 +3,12 @@ package pe.edu.cibertec.ventas.client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import pe.edu.cibertec.ventas.dto.ApiResponse;
+import pe.edu.cibertec.ventas.exception.BusinessException;
+
 import java.util.Map;
 
 @Service
@@ -17,14 +21,18 @@ public class CarritoClient {
 
     public Map<String, Object> obtenerCarrito(Long idUsuario) {
         try {
-            return restTemplate.exchange(
+            ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(
                     CARRITO_URL + "/" + idUsuario,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            ).getBody();
+                    new ParameterizedTypeReference<ApiResponse<Map<String, Object>>>() {}
+            );
+            if (response.getBody() != null && response.getBody().getSuccess()) {
+                return response.getBody().getData();
+            }
+            throw new BusinessException("No se pudo obtener el carrito del usuario", "CARRITO_ERROR");
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener carrito del usuario");
+            throw new BusinessException("Error de comunicación con MS-Carrito: " + e.getMessage(), "COMMUNICATION_ERROR");
         }
     }
 
@@ -32,7 +40,7 @@ public class CarritoClient {
         try {
             restTemplate.delete(CARRITO_URL + "/" + idUsuario + "/vaciar");
         } catch (Exception e) {
-            throw new RuntimeException("Error al vaciar carrito");
+            throw new BusinessException("Error al vaciar carrito en MS-Carrito", "CARRITO_CLEAR_ERROR");
         }
     }
 }

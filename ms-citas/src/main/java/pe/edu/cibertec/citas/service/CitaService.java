@@ -1,6 +1,8 @@
 package pe.edu.cibertec.citas.service;
 
 import pe.edu.cibertec.citas.dto.CitaRequest;
+import pe.edu.cibertec.citas.exception.BusinessException;
+import pe.edu.cibertec.citas.exception.ResourceNotFoundException;
 import pe.edu.cibertec.citas.model.Cita;
 import pe.edu.cibertec.citas.model.Sucursal;
 import pe.edu.cibertec.citas.model.TipoServicio;
@@ -30,15 +32,15 @@ public class CitaService {
     public Cita agendarCita(CitaRequest request) {
         // Validar que la fecha no sea pasada
         if (request.getFechaCita().isBefore(LocalDate.now())) {
-            throw new RuntimeException("No se puede agendar una cita en fecha pasada");
+            throw new BusinessException("No se puede agendar una cita en una fecha pasada", "PAST_DATE_ERROR");
         }
 
-        // Obtener sucursal y tipo de servicio
+        // Obtener sucursal y tipo de servicio (Lanzan ResourceNotFound si no existen)
         Sucursal sucursal = sucursalRepository.findById(request.getIdSucursal())
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal", "id", request.getIdSucursal()));
 
         TipoServicio tipoServicio = tipoServicioRepository.findById(request.getIdTipoServicio())
-                .orElseThrow(() -> new RuntimeException("Tipo de servicio no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tipo de Servicio", "id", request.getIdTipoServicio()));
 
         // Crear cita
         Cita cita = new Cita();
@@ -50,6 +52,8 @@ public class CitaService {
         cita.setHoraCita(request.getHoraCita());
         cita.setNotas(request.getNotas());
         cita.setEstadoCita("Programada");
+        cita.setFechaCreacion(LocalDateTime.now());
+        cita.setFechaActualizacion(LocalDateTime.now());
 
         return citaRepository.save(cita);
     }
@@ -60,30 +64,42 @@ public class CitaService {
 
     public Cita obtenerPorId(Long id) {
         return citaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cita", "id", id));
     }
 
     public Cita reprogramarCita(Long id, LocalDate nuevaFecha, java.time.LocalTime nuevaHora) {
         Cita cita = obtenerPorId(id);
 
+        if (nuevaFecha.isBefore(LocalDate.now())) {
+            throw new BusinessException("No se puede reprogramar la cita a una fecha pasada", "PAST_DATE_ERROR");
+        }
+
         if (!cita.getEstadoCita().equals("Cancelada") && !cita.getEstadoCita().equals("Completada")) {
             cita.setFechaCita(nuevaFecha);
             cita.setHoraCita(nuevaHora);
+            cita.setFechaActualizacion(LocalDateTime.now());
             return citaRepository.save(cita);
         } else {
-            throw new RuntimeException("No se puede reprogramar una cita cancelada o completada");
+            throw new BusinessException("No se puede reprogramar una cita que ya fue cancelada o completada", "INVALID_STATUS_TRANSITION");
         }
     }
 
     public Cita actualizarEstado(Long id, String nuevoEstado) {
         Cita cita = obtenerPorId(id);
         cita.setEstadoCita(nuevoEstado);
+        cita.setFechaActualizacion(LocalDateTime.now());
         return citaRepository.save(cita);
     }
 
     public void cancelarCita(Long id) {
         Cita cita = obtenerPorId(id);
+
+        if (cita.getEstadoCita().equals("Completada")) {
+            throw new BusinessException("No se puede cancelar una cita que ya fue completada", "INVALID_STATUS_TRANSITION");
+        }
+
         cita.setEstadoCita("Cancelada");
+        cita.setFechaActualizacion(LocalDateTime.now());
         citaRepository.save(cita);
     }
 

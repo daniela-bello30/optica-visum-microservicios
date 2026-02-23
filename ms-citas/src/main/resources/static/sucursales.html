@@ -171,7 +171,9 @@
     async function cargarSucursales() {
         try {
             const response = await fetch(API_URL);
-            const sucursales = await response.json();
+            const jsonResponse = await response.json();
+            // EXTRAEMOS .data AQUI 👇
+            const sucursales = jsonResponse.data;
             mostrarSucursales(sucursales);
         } catch (error) {
             console.error('Error:', error);

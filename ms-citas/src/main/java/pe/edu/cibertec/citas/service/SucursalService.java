@@ -1,5 +1,6 @@
 package pe.edu.cibertec.citas.service;
 
+import pe.edu.cibertec.citas.exception.ResourceNotFoundException;
 import pe.edu.cibertec.citas.model.Sucursal;
 import pe.edu.cibertec.citas.repository.SucursalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,6 @@ public class SucursalService {
 
     public Sucursal obtenerPorId(Long id) {
         return sucursalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sucursal no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal", "id", id));
     }
 }

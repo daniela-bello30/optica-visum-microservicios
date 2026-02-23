@@ -105,3 +105,4 @@ info:
     encoding: UTF-8
     java:
       version: @java.version@
+

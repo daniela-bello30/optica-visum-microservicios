@@ -4,6 +4,8 @@ import pe.edu.cibertec.carrito.client.CatalogoClient;
 import pe.edu.cibertec.carrito.dto.CarritoDTO;
 import pe.edu.cibertec.carrito.dto.DetalleCarritoDTO;
 import pe.edu.cibertec.carrito.dto.ProductoDTO;
+import pe.edu.cibertec.carrito.exception.BusinessException;
+import pe.edu.cibertec.carrito.exception.ResourceNotFoundException;
 import pe.edu.cibertec.carrito.model.Carrito;
 import pe.edu.cibertec.carrito.model.DetalleCarrito;
 import pe.edu.cibertec.carrito.repository.CarritoRepository;
@@ -52,7 +54,7 @@ public class CarritoService {
         ProductoDTO producto = catalogoClient.obtenerProducto(idProducto);
 
         if (producto.getStock() < cantidad) {
-            throw new RuntimeException("Stock insuficiente");
+            throw new BusinessException("Stock insuficiente. Disponible: " + producto.getStock(), "INSUFFICIENT_STOCK");
         }
 
         // Verificar si el producto ya está en el carrito
@@ -70,8 +72,8 @@ public class CarritoService {
             detalle.setCarrito(carrito);
             detalle.setIdProducto(idProducto);
             detalle.setCantidad(cantidad);
-            detalle.setPrecioUnitario(producto.getPrecioUnitario());
-            detalle.setSubtotal(producto.getPrecioUnitario().multiply(new BigDecimal(cantidad)));
+            detalle.setPrecioUnitario(producto.getPrecioFinal());
+            detalle.setSubtotal(producto.getPrecioFinal().multiply(new BigDecimal(cantidad)));
         }
 
         detalleCarritoRepository.save(detalle);
@@ -81,7 +83,7 @@ public class CarritoService {
     @Transactional
     public CarritoDTO actualizarCantidad(Long idUsuario, Long idProducto, Integer nuevaCantidad) {
         Carrito carrito = carritoRepository.findByIdUsuarioAndEstado(idUsuario, "Activo")
-                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito", "idUsuario", idUsuario));
 
         DetalleCarrito detalle = detalleCarritoRepository
                 .findByCarrito_IdCarritoAndIdProducto(carrito.getIdCarrito(), idProducto)
@@ -101,7 +103,7 @@ public class CarritoService {
     @Transactional
     public void eliminarProducto(Long idUsuario, Long idProducto) {
         Carrito carrito = carritoRepository.findByIdUsuarioAndEstado(idUsuario, "Activo")
-                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito", "idUsuario", idUsuario));
 
         DetalleCarrito detalle = detalleCarritoRepository
                 .findByCarrito_IdCarritoAndIdProducto(carrito.getIdCarrito(), idProducto)
@@ -113,7 +115,7 @@ public class CarritoService {
     @Transactional
     public void vaciarCarrito(Long idUsuario) {
         Carrito carrito = carritoRepository.findByIdUsuarioAndEstado(idUsuario, "Activo")
-                .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Carrito", "idUsuario", idUsuario));
 
         detalleCarritoRepository.deleteByCarrito_IdCarrito(carrito.getIdCarrito());
     }
@@ -133,7 +135,7 @@ public class CarritoService {
             // Obtener nombre del producto desde MS-CATALOGO
             try {
                 ProductoDTO producto = catalogoClient.obtenerProducto(detalle.getIdProducto());
-                itemDTO.setNombreProducto(producto.getNombreProducto());
+                itemDTO.setNombreProducto(producto.getNombre());
             } catch (Exception e) {
                 itemDTO.setNombreProducto("Producto no disponible");
             }
