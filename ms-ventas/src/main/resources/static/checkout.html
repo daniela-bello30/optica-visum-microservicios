@@ -394,24 +394,52 @@
     const API_CARRITO = 'http://localhost:8083/carrito';
     const API_VENTAS = 'http://localhost:8084/pedidos';
     const API_CITAS = 'http://localhost:8085/sucursales';
-    // Extraer el ID real del usuario logueado
-    const usuarioLogueado = localStorage.getItem('usuario');
-    let ID_USUARIO = null;
+    // 1. LEER EL USUARIO DESDE LA URL (Poner esto fuera de las funciones, arriba junto a API_URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const ID_USUARIO = parseInt(urlParams.get('userId'));
+    const nombreUsuario = urlParams.get('nombre');
+    const emailUsuario = urlParams.get('email');
 
-    if (usuarioLogueado) {
-        const userObj = JSON.parse(usuarioLogueado);
-        ID_USUARIO = userObj.idUsuario;
-        console.log("Sesión activa para: " + userObj.email);
-    } else {
-        const paginaActual = window.location.pathname;
-        // Páginas que permiten ver contenido sin login (pero no comprar/agendar)
-        const paginasPublicas = ['/catalogo.html', '/sucursales.html', '/producto.html'];
+    // 2. FUNCIÓN AGREGAR AL CARRITO CORREGIDA
+    async function agregarAlCarrito(idProducto) {
 
-        const esPublica = paginasPublicas.some(p => paginaActual.includes(p));
+        // Si no hay ID en la URL, lo mandamos a loguearse
+        if (!ID_USUARIO) {
+            alert("⚠️ Debes iniciar sesión para agregar productos al carrito.");
+            window.location.href = 'http://localhost:8081/login.html';
+            return;
+        }
 
-        if (!esPublica) {
-            alert("⚠️ Debes iniciar sesión para acceder a esta función.");
-            window.location.href = 'http://localhost:8080/login.html';
+        const cantidad = 1; // Faltaba esta variable
+
+        // URL del microservicio de Carrito (Puerto 8083)
+        const URL_AGREGAR = `http://localhost:8083/carrito/${ID_USUARIO}/agregar?idProducto=${idProducto}&cantidad=${cantidad}`;
+
+        try {
+            // Hacemos la petición POST al Carrito
+            const response = await fetch(URL_AGREGAR, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const jsonResponse = await response.json();
+
+            // Verificamos si la API nos respondió con éxito
+            if (response.ok && jsonResponse.success) {
+                // Preguntamos al usuario si quiere ir a pagar
+                if (confirm('✅ ¡' + jsonResponse.message + '!\n\n¿Deseas ir a tu carrito ahora?')) {
+
+                    // MUY IMPORTANTE: Saltamos al carrito pasándole los datos en la URL
+                    window.location.href = `http://localhost:8083/carrito.html?userId=${ID_USUARIO}&nombre=${nombreUsuario}&email=${emailUsuario}`;
+                }
+            } else {
+                alert('❌ Error al agregar al carrito: ' + (jsonResponse.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error al conectar con el carrito:', error);
+            alert('❌ Error de conexión. ¿Verificaste que el MS-CARRITO (puerto 8083) esté encendido?');
         }
     }
 

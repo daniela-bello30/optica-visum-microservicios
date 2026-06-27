@@ -8,7 +8,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
 
-        /* HEADER Y BIENVENIDA */
         .hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -42,7 +41,6 @@
         .hero h1 { font-size: 48px; margin-bottom: 20px; }
         .hero p { font-size: 20px; opacity: 0.9; max-width: 600px; margin: 0 auto; }
 
-        /* TARJETAS */
         .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
         .section-title { text-align: center; font-size: 32px; color: #333; margin-bottom: 40px; }
         .services-grid {
@@ -74,7 +72,6 @@
 <body>
 
 <div class="hero">
-    <!-- BARRA SUPERIOR DE SESIÓN -->
     <div class="top-nav" id="authNav">
         <!-- Se llena con Javascript -->
     </div>
@@ -87,17 +84,42 @@
     <h2 class="section-title">Nuestros Servicios</h2>
 
     <div class="services-grid">
-        <a href="http://localhost:8080/catalogo.html" class="service-card">...</a>
+        <!-- Usamos onclick para pasar la sesión por la URL -->
+        <a onclick="navegarProtegido('http://localhost:8082/catalogo.html', false)" class="service-card">
+            <div class="service-icon">🕶️</div>
+            <h3>Catálogo de Productos</h3>
+            <p>Explora nuestra amplia selección de monturas, lentes de sol y accesorios</p>
+        </a>
 
-        <a onclick="verificarAcceso('http://localhost:8080/carrito.html')" class="service-card">...</a>
+        <a onclick="navegarProtegido('http://localhost:8083/carrito.html', true)" class="service-card">
+            <div class="service-icon">🛒</div>
+            <h3>Mi Carrito</h3>
+            <p>Revisa los productos seleccionados y procede con tu compra segura</p>
+        </a>
 
-        <a onclick="verificarAcceso('http://localhost:8080/citas.html')" class="service-card">...</a>
+        <a onclick="navegarProtegido('http://localhost:8085/citas.html', true)" class="service-card">
+            <div class="service-icon">📅</div>
+            <h3>Agendar Cita</h3>
+            <p>Reserva tu cita para examen visual, ajuste de monturas o graduación</p>
+        </a>
 
-        <a onclick="verificarAcceso('http://localhost:8080/pedidos.html')" class="service-card">...</a>
+        <a onclick="navegarProtegido('http://localhost:8084/pedidos.html', true)" class="service-card">
+            <div class="service-icon">📦</div>
+            <h3>Mis Pedidos</h3>
+            <p>Consulta el estado de tus compras y el historial de pedidos realizados</p>
+        </a>
 
-        <a id="tarjetaCuenta" href="http://localhost:8080/login.html" class="service-card">...</a>
+        <a id="tarjetaCuenta" href="http://localhost:8081/login.html" class="service-card">
+            <div class="service-icon">👤</div>
+            <h3 id="textoCuentaTitulo">Iniciar Sesión</h3>
+            <p id="textoCuentaDesc">Accede a tu cuenta para poder comprar y agendar citas.</p>
+        </a>
 
-        <a href="http://localhost:8080/sucursales.html" class="service-card">...</a>
+        <a onclick="navegarProtegido('http://localhost:8085/sucursales.html', false)" class="service-card">
+            <div class="service-icon">📍</div>
+            <h3>Sucursales</h3>
+            <p>Encuentra nuestra sucursal más cercana con horarios de atención</p>
+        </a>
     </div>
 </div>
 
@@ -107,28 +129,31 @@
 </div>
 
 <script>
-    // 1. Cuando la página carga, validamos si hay sesión activa
+    let currentUser = null;
+
     document.addEventListener('DOMContentLoaded', () => {
-        const usuarioStr = localStorage.getItem('usuario');
+        // Leer la URL para ver si el login nos mandó los datos
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        const nombre = urlParams.get('nombre');
+        const email = urlParams.get('email');
+
         const authNav = document.getElementById('authNav');
         const tarjetaCuenta = document.getElementById('tarjetaCuenta');
 
-        if (usuarioStr) {
-            // SÍ HAY SESIÓN
-            const usuario = JSON.parse(usuarioStr);
+        if (userId) {
+            // Guardamos al usuario en memoria
+            currentUser = { userId, nombre, email };
 
-            // Ponemos el nombre arriba a la derecha y el botón salir
             authNav.innerHTML = `
-                <span class="user-greeting">👋 Hola, ${usuario.nombres}</span>
+                <span class="user-greeting">👋 Hola, ${nombre}</span>
                 <button onclick="cerrarSesion()" class="btn-nav btn-logout">Cerrar Sesión</button>
             `;
 
-            // Cambiamos la tarjeta de "Mi cuenta"
             document.getElementById('textoCuentaTitulo').textContent = 'Mi Perfil';
-            document.getElementById('textoCuentaDesc').textContent = `Logueado como: ${usuario.email}`;
-            tarjetaCuenta.href = "#"; // Ya no lo lleva al login
+            document.getElementById('textoCuentaDesc').textContent = `Logueado como: ${email}`;
+            tarjetaCuenta.onclick = (e) => e.preventDefault(); // Desactiva el link de login
         } else {
-            // NO HAY SESIÓN
             authNav.innerHTML = `
                 <a href="http://localhost:8081/login.html" class="btn-nav">Iniciar Sesión</a>
                 <a href="http://localhost:8081/register.html" class="btn-nav">Registrarse</a>
@@ -136,22 +161,25 @@
         }
     });
 
-    // 2. Función para proteger botones (Carrito, Pedidos, Citas)
-    function verificarAcceso(urlDestino) {
-        const usuarioStr = localStorage.getItem('usuario');
-        if (!usuarioStr) {
+    // Función que viaja entre microservicios llevando los datos
+    function navegarProtegido(urlBase, requiereLogin) {
+        if (requiereLogin && !currentUser) {
             alert('⚠️ Debes iniciar sesión para acceder a esta función.');
             window.location.href = 'http://localhost:8081/login.html';
+            return;
+        }
+
+        if (currentUser) {
+            // Le pegamos los datos a la URL para que no se pierda la sesión
+            window.location.href = `${urlBase}?userId=${currentUser.userId}&nombre=${currentUser.nombre}&email=${currentUser.email}`;
         } else {
-            window.location.href = urlDestino;
+            window.location.href = urlBase;
         }
     }
 
-    // 3. Función para cerrar sesión
     function cerrarSesion() {
         if(confirm('¿Estás seguro que deseas cerrar sesión?')) {
-            localStorage.removeItem('usuario'); // Borramos los datos
-            window.location.reload(); // Recargamos la página
+            window.location.href = 'http://localhost:8080/index.html';
         }
     }
 </script>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sucursales - VISUM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .sucursales-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .sucursal-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .sucursal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .sucursal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+        }
+
+        .sucursal-nombre {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .sucursal-body {
+            padding: 25px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            min-width: 25px;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .horarios {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .horarios-titulo {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .horario-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .horario-dia {
+            font-weight: 600;
+            color: #555;
+            text-transform: capitalize;
+        }
+
+        .horario-horas {
+            color: #666;
+        }
+
+        .btn-agendar {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn-agendar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📍 Nuestras Sucursales</h1>
+    <p>Encuentra la más cercana a ti</p>
+</div>
+
+<div class="container">
+    <div id="sucursalesGrid" class="sucursales-grid">
+        <div class="loading">Cargando sucursales...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8085/sucursales';
+
+    window.onload = cargarSucursales;
+
+    async function cargarSucursales() {
+        try {
+            const response = await fetch(API_URL);
+            const sucursales = await response.json();
+            mostrarSucursales(sucursales);
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('sucursalesGrid').innerHTML = `
+                    <div class="loading">Error al cargar sucursales</div>
+                `;
+        }
+    }
+
+    function mostrarSucursales(sucursales) {
+        const grid = document.getElementById('sucursalesGrid');
+
+        if (!sucursales || sucursales.length === 0) {
+            grid.innerHTML = '<div class="loading">No hay sucursales disponibles</div>';
+            return;
+        }
+
+        grid.innerHTML = sucursales.map(sucursal => {
+            let horarios = {};
+            try {
+                horarios = typeof sucursal.horarioAtencion === 'string'
+                    ? JSON.parse(sucursal.horarioAtencion)
+                    : sucursal.horarioAtencion || {};
+            } catch (e) {
+                console.error('Error parsing horarios:', e);
+            }
+
+            return `
+                    <div class="sucursal-card">
+                        <div class="sucursal-header">
+                            <div class="sucursal-nombre">${sucursal.nombreSucursal}</div>
+                        </div>
+
+                        <div class="sucursal-body">
+                            <div class="info-row">
+                                <div class="info-icon">📍</div>
+                                <div class="info-content">
+                                    <div class="info-label">Dirección</div>
+                                    <div class="info-value">
+                                        ${sucursal.direccion}<br>
+                                        ${sucursal.distrito}, ${sucursal.provincia}
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${sucursal.telefono ? `
+                                <div class="info-row">
+                                    <div class="info-icon">📞</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Teléfono</div>
+                                        <div class="info-value">${sucursal.telefono}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            ${sucursal.email ? `
+                                <div class="info-row">
+                                    <div class="info-icon">✉️</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Email</div>
+                                        <div class="info-value">${sucursal.email}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <div class="horarios">
+                                <div class="horarios-titulo">
+                                    🕒 Horarios de Atención
+                                </div>
+                                ${generarHorarios(horarios)}
+                            </div>
+
+                            <button class="btn-agendar" onclick="agendarEnSucursal(${sucursal.idSucursal})">
+                                Agendar Cita Aquí
+                            </button>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+    }
+
+    function generarHorarios(horarios) {
+        const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+        const diasEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+        return dias.map((dia, index) => {
+            const horario = horarios[dia] || 'Cerrado';
+            return `
+                    <div class="horario-item">
+                        <span class="horario-dia">${diasEs[index]}:</span>
+                        <span class="horario-horas">${horario}</span>
+                    </div>
+                `;
+        }).join('');
+    }
+
+    function agendarEnSucursal(idSucursal) {
+        window.location.href = `citas.html?sucursal=${idSucursal}`;
+    }
+</script>
+</body>
+</html>

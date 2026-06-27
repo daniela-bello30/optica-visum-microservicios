@@ -140,8 +140,8 @@
         const password = document.getElementById('password').value;
 
         try {
-            // Llamamos a la API (puede ser a través del gateway o directo al 8081)
-            const response = await fetch('http://localhost:8081/auth/login', {
+            // Llamamos a la API
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -149,17 +149,27 @@
             const result = await response.json();
 
             if (response.ok && result.success) {
-                localStorage.setItem('usuario', JSON.stringify(result.data));
-                // IMPORTANTE: Ahora redirigimos al 8080
-                window.location.href = 'http://localhost:8080/index.html';
+                // 1. AQUÍ PONEMOS EL const data extrayéndolo del result
+                const data = result.data;
+
+                // 2. Mostramos tu mensaje verde de éxito
+                showMessage('¡Login exitoso! Bienvenido ' + data.nombres, 'success');
+
+                // 3. Esperamos 1 segundo y saltamos al index.html pasándole los datos por la URL
+                setTimeout(() => {
+                    window.location.href = `http://localhost:8080/index.html?userId=${data.idUsuario}&nombre=${encodeURIComponent(data.nombres)}&email=${encodeURIComponent(data.email)}`;
+                }, 1000);
+
             } else {
-                alert(result.message);
+                // Mostramos el error en tu cartelito rojo
+                showMessage(result.message || 'Error al iniciar sesión', 'error');
             }
         } catch (error) {
-            alert('Error de conexión');
+            showMessage('Error de conexión con el servidor', 'error');
         }
     });
 
+    // Esta función ya la tenías y está perfecta
     function showMessage(text, type) {
         const messageDiv = document.getElementById('message');
         messageDiv.textContent = text;
